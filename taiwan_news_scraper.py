@@ -1,24 +1,25 @@
-import os
-import time
+from flask import Flask, render_template
 import feedparser
-import requests
-from html import escape
-from jinja2 import Environment, FileSystemLoader
+from bs4 import BeautifulSoup
+from flask_bootstrap import Bootstrap
 
-# Your RSS feeds
-NEWS_FEEDS = {
-    "即時": "https://news.ltn.com.tw/rss/all.xml",
-    "政治": "https://news.ltn.com.tw/rss/politics.xml",
-    "社會": "https://news.ltn.com.tw/rss/society.xml",
-    "生活": "https://news.ltn.com.tw/rss/life.xml",
-    "評論": "https://news.ltn.com.tw/rss/opinion.xml",
-    "國際": "https://news.ltn.com.tw/rss/world.xml",
-    "財經": "https://news.ltn.com.tw/rss/business.xml",
-    "體育": "https://news.ltn.com.tw/rss/sports.xml",
-    "娛樂": "https://news.ltn.com.tw/rss/entertainment.xml",
-    "地方": "https://news.ltn.com.tw/rss/local.xml",
-    "人物": "https://news.ltn.com.tw/rss/people.xml",
-    "蒐奇": "https://news.ltn.com.tw/rss/novelty.xml",
+app = Flask(__name__)
+Bootstrap(app)
+
+# RSS feeds for different categories
+RSS_FEEDS = {
+    '即時': 'https://news.ltn.com.tw/rss/all.xml',
+    '政治': 'https://news.ltn.com.tw/rss/politics.xml',
+    '社會': 'https://news.ltn.com.tw/rss/society.xml',
+    '生活': 'https://news.ltn.com.tw/rss/life.xml',
+    '評論': 'https://news.ltn.com.tw/rss/opinion.xml',
+    '國際': 'https://news.ltn.com.tw/rss/world.xml',
+    '財經': 'https://news.ltn.com.tw/rss/business.xml',
+    '體育': 'https://news.ltn.com.tw/rss/sports.xml',
+    '娛樂': 'https://news.ltn.com.tw/rss/entertainment.xml',
+    '地方': 'https://news.ltn.com.tw/rss/local.xml',
+    '人物': 'https://news.ltn.com.tw/rss/people.xml',
+    '蒐奇': 'https://news.ltn.com.tw/rss/novelty.xml'
 }
 
 # Keywords for excluding or lowering rank
@@ -28,72 +29,51 @@ LOWER_RANK_KEYWORDS = {"降低排序的關鍵詞1", "降低排序的關鍵詞2"}
 # Categories to hide
 HIDE_CATEGORIES = {"不感興趣的類別"}
 
-NEWS_PER_FEED = 5  # Maximum number of news items per feed
+
+NEWS_PER_FEED = 10  # Maximum number of news items per feed
 MAX_PARAGRAPHS = 3  # Maximum number of paragraphs to include in the summary
 
 
-def is_news_item_interesting(news_item):
-    """Check if a news item is interesting based on its title and description."""
-    for keyword in EXCLUDE_KEYWORDS:
-        if keyword in news_item['title'] or keyword in news_item['description']:
-            return False
-    return True
-
-
-def sort_news_items(news_items):
-    """Sort news items first by whether they contain lower-rank keywords, then by title."""
-    def get_rank(item):
-        for keyword in LOWER_RANK_KEYWORDS:
-            if keyword in item['title'] or keyword in item['description']:
-                return (1, item['title'])
-        return (0, item['title'])
-
-    return sorted(news_items, key=get_rank)
-
-
-def fetch_news():
-    """Fetch news from RSS feeds."""
-    news_data = {}
-
-    for category, feed in NEWS_FEEDS.items():
+@app.route('/')
+def get_news():
+    all_articles = {}
+    for category, url in RSS_FEEDS.items():
+        # Skip categories that we want to hide
         if category in HIDE_CATEGORIES:
             continue
 
-        news_list = []
-        print(f"Fetching news from {feed}...")
-        try:
-            d = feedparser.parse(feed)
-        except Exception as e:
-            print(f"Error parsing feed {feed}: {e}")
-            continue
-        for entry in d.entries[:NEWS_PER_FEED]:
-            news_item = {}
-            news_item['link'] = entry.link
-            news_item['title'] = escape(entry.title)
-            if 'description' in entry:
-                paragraphs = entry.description.split("\n\n")[:MAX_PARAGRAPHS]
-                news_item['description'] = " ".join(paragraphs)
+        feed = feedparser.parse(url)
+        filtered_articles = []
+        for article in feed['entries']:
+            # Skip articles that contain excluded keywords
+            if any(keyword in article.title for keyword in EXCLUDE_KEYWORDS):
+                continue
 
-            if is_news_item_interesting(news_item):
-                news_list.append(news_item)
-        news_data[category] = sort_news_items(news_list)
+            # Parse description HTML with BeautifulSoup
+            soup = BeautifulSoup(article.get('summary', ''), 'html.parser')
 
-    return news_data
+            # Limit the description to the first MAX_PARAGRAPHS paragraphs
+            description = '\n'.join(str(p)
+                                    for p in soup.find_all('p')[:MAX_PARAGRAPHS])
 
+            filtered_article = {
+                'title': article.get('title', ''),
+                'link': article.get('link', ''),
+                'description': description
+            }
 
-def generate_html(news_data):
-    """Generate HTML output using a Jinja2 template."""
-    file_loader = FileSystemLoader('.')
-    env = Environment(loader=file_loader)
+            # If the article contains a lower-rank keyword, add it to the end
+            if any(keyword in filtered_article['title'] for keyword in LOWER_RANK_KEYWORDS):
+                filtered_articles.append(filtered_article)
+            else:
+                # Otherwise, add it to the front
+                filtered_articles.insert(0, filtered_article)
 
-    template = env.get_template('news_template.html')
+        # Limit the articles to NEWS_PER_FEED
+        all_articles[category] = filtered_articles[:NEWS_PER_FEED]
 
-    output = template.render(news=news_data)
-
-    with open("news_output.html", "w") as f:
-        f.write(output)
+    return render_template('news_template.html', articles=all_articles)
 
 
 if __name__ == "__main__":
-    news_data = fetch_news()
-    generate_html(news_data)
+    app.run(port=5000, debug=True)

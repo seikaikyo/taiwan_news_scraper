@@ -9,8 +9,8 @@ Bootstrap(app)
 
 # RSS feeds for different categories
 RSS_FEEDS = {
-    '國際': 'https://news.ltn.com.tw/rss/world.xml',
     '即時': 'https://news.ltn.com.tw/rss/all.xml',
+    '國際': 'https://news.ltn.com.tw/rss/world.xml',
     '財經': 'https://news.ltn.com.tw/rss/business.xml',
     '生活': 'https://news.ltn.com.tw/rss/life.xml',
     '社會': 'https://news.ltn.com.tw/rss/society.xml',
@@ -29,7 +29,7 @@ EXCLUDE_KEYWORDS = {"中國", "中英對照讀新聞", "中職", "民眾黨", "�
                     "飆股幕後", "首長早餐會", "王力宏", "Makiyo", "弦子", "吳鳳",
                     "彭佳慧", "MLB", "金廈", "如懿傳", "黃國昌", "館長", "李玟",
                     "亞錦", "張秀卿", "股市", "柯志恩", "周子瑜", "聯賽", "游淑慧",
-                    "王世堅", "高嘉瑜", "林心如"}
+                    "王世堅", "高嘉瑜", "林心如", "柯文哲", "亞運", "男籃", "演藝圈"}
 LOWER_RANK_KEYWORDS = {"降低排序的關鍵詞1", "降低排序的關鍵詞2"}
 
 # Categories to hide

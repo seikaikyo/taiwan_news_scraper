@@ -23,13 +23,13 @@ RSS_FEEDS = {
 
 # Keywords for excluding or lowering rank
 EXCLUDE_KEYWORDS = {"中國", "中英對照讀新聞", "中職",
-                    "民眾黨", "濕身", "郭台銘", "廖大乙", "侯友宜", "中醫", "民俗", "證券行情表", "證券表格", "浪浪", "環保團體", "自由說新聞", "官我什麼事"}
+                    "民眾黨", "濕身", "郭台銘", "廖大乙", "侯友宜", "中醫", "民俗", "證券行情表", "證券表格", "浪浪", "環保團體", "自由說新聞", "官我什麼事", "謠言終結站", "飆股幕後", "首長早餐會"}
 LOWER_RANK_KEYWORDS = {"降低排序的關鍵詞1", "降低排序的關鍵詞2"}
 
 # Categories to hide
 HIDE_CATEGORIES = {"即時", "政治", "娛樂", "體育", "地方", "評論"}
 
-NEWS_PER_FEED = 20  # Maximum number of news items per feed
+NEWS_PER_FEED = 30  # Maximum number of news items per feed
 MAX_PARAGRAPHS = 2  # Maximum number of paragraphs to include in the summary
 
 
@@ -43,7 +43,7 @@ def get_news():
 
         feed = feedparser.parse(url)
         filtered_articles = []
-        for article in feed.entries:
+        for article in feed['entries']:
             # Skip articles that contain excluded keywords
             if any(keyword in article.title for keyword in EXCLUDE_KEYWORDS):
                 continue
@@ -52,9 +52,8 @@ def get_news():
             soup = BeautifulSoup(article.get('summary', ''), 'html.parser')
 
             # Limit the description to the first MAX_PARAGRAPHS paragraphs
-            paragraphs = soup.find_all('p')
             description = '\n'.join(str(p)
-                                    for p in paragraphs[:MAX_PARAGRAPHS])
+                                    for p in soup.find_all('p')[:MAX_PARAGRAPHS])
 
             filtered_article = {
                 'title': article.get('title', ''),

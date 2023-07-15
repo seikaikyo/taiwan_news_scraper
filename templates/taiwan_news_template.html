@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Taiwan News Scraper</title>
+    <style>
+        .container {
+            width: 80%;
+            margin: 0 auto; /* Center the container */
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .column {
+            flex: 0 0 calc(20% - 10px); /* Five columns, accounting for margins */
+            margin: 5px;
+        }
+        h2 {
+            color: rgb(255, 0, 174);
+        }
+        .content {
+            height: 350px;
+            overflow: auto;
+        }
+        a {
+            text-decoration:none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            {% for category, articles in articles.items() %}
+            <div class="column">
+                <h2>{{category}}</h2>
+                {% for article in articles %}
+                <div class="content">
+                    <p>
+                        <a href="{{article['link']}}" target="_blank">{{article['title']}}</a>
+                        <br>{{ article['published_time'] }}
+                        <br>
+                        <br>{{ article['description'] }}
+                    </br>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

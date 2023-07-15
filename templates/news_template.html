@@ -1,7 +1,13 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <title>Taiwan News Scraper</title>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>News Scraper</title>
+    <link
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <style>
         .container {
             width: 80%;
@@ -20,33 +26,67 @@
             color: rgb(255, 0, 174);
         }
         .content {
-            height: 350px;
-            overflow: auto;
+            height: 300px;
+            overflow: hidden;
         }
         a {
             text-decoration:none;
         }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="row">
-            {% for category, articles in articles.items() %}
-            <div class="column">
-                <h2>{{category}}</h2>
-                {% for article in articles %}
-                <div class="content">
-                    <p>
-                        <a href="{{article['link']}}" target="_blank">{{article['title']}}</a>
-                        <br>{{ article['published_time'] }}
-                        <br>
-                        <br>{{ article['description'] }}
-                    </br>
+      <h1>News Scraper</h1>
+      <ul class="nav nav-tabs">
+        <li class="active">
+          <a data-toggle="tab" href="#taiwan">Taiwan News</a>
+        </li>
+        <li><a data-toggle="tab" href="#japan">Japan News</a></li>
+      </ul>
+
+      <div class="tab-content">
+        <div id="taiwan" class="tab-pane fade in active">
+            <div class="row">
+                {% for category, articles in taiwan_articles.items() %}
+                <div class="column">
+                    <h2>{{category}}</h2>
+                    {% for article in articles %}
+                    <div class="content">
+                        <p>
+                            <a href="{{article['link']}}" target="_blank">{{article['title']}}</a>
+                            <br>{{ article['published_time'] }}
+                            <br>
+                            <br>{{ article['description'] }}
+                        </br>
+                    </div>
+                    {% endfor %}
                 </div>
                 {% endfor %}
             </div>
-            {% endfor %}
         </div>
+        <div id="japan" class="tab-pane fade">
+            <div class="row">
+                {% for category, articles in japan_articles.items() %}
+                <div class="column">
+                    <h2>{{category}}</h2>
+                    {% for article in articles %}
+                    <div class="content">
+                        <p>
+                            <a href="{{article['link']}}" target="_blank">{{article['title']}}</a>
+                            <br>{{ article['published_time'] }}
+                            <br>
+                            <br>{{ article['description'] }}
+                        </br>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+      </div>
     </div>
-</body>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  </body>
 </html>

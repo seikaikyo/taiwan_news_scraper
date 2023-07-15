@@ -80,7 +80,7 @@ def get_news(RSS_FEEDS, EXCLUDE_KEYWORDS, LOWER_RANK_KEYWORDS, HIDE_CATEGORIES):
             continue
 
         feed = feedparser.parse(url)
-        filtered_articles = []
+        articles = []
         for entry in feed.entries:
             # Skip articles that contain excluded keywords in title or description
             if any(keyword in entry.title for keyword in EXCLUDE_KEYWORDS) or \
@@ -103,22 +103,19 @@ def get_news(RSS_FEEDS, EXCLUDE_KEYWORDS, LOWER_RANK_KEYWORDS, HIDE_CATEGORIES):
                 continue
             seen_articles.add(article_id)
 
-            filtered_article = {
+            articles.append({
                 'title': title,
                 'link': link,
                 'description': description,
                 'published_time': formatted_published_time
-            }
+            })
 
-            # If the article contains a lower-rank keyword, add it to the end
-            if any(keyword in filtered_article['title'] for keyword in LOWER_RANK_KEYWORDS):
-                filtered_articles.append(filtered_article)
-            else:
-                # Otherwise, add it to the front
-                filtered_articles.insert(0, filtered_article)
+        # Sort the articles by published time from new to old
+        articles.sort(
+            key=lambda article: article['published_time'], reverse=True)
 
         # Limit the articles to NEWS_PER_FEED
-        all_articles[category] = filtered_articles[:NEWS_PER_FEED]
+        all_articles[category] = articles[:NEWS_PER_FEED]
     return all_articles
 
 

@@ -18,7 +18,6 @@ RSS_FEEDS = {
     '體育': 'https://news.ltn.com.tw/rss/sports.xml',
     '娛樂': 'https://news.ltn.com.tw/rss/entertainment.xml',
     '地方': 'https://news.ltn.com.tw/rss/local.xml',
-    '人物': 'https://news.ltn.com.tw/rss/people.xml',
     '蒐奇': 'https://news.ltn.com.tw/rss/novelty.xml'
 }
 
@@ -28,7 +27,6 @@ LOWER_RANK_KEYWORDS = {"降低排序的關鍵詞1", "降低排序的關鍵詞2"}
 
 # Categories to hide
 HIDE_CATEGORIES = {"不感興趣的類別"}
-
 
 NEWS_PER_FEED = 10  # Maximum number of news items per feed
 MAX_PARAGRAPHS = 3  # Maximum number of paragraphs to include in the summary

@@ -1,10 +1,12 @@
 # Taiwan News Scraper
 
+![Preview](templates/preview.png)
+
 This program collects and aggregates news from various Taiwanese news RSS feeds. It enables users to filter news based on specific keywords, adjust the display order of news items, and limit the number of news items displayed per feed. In addition, users can hide news from categories they are not interested in.
 
 ## Usage
 
-1. Install the requirements by running `pip install -r requirements.txt`.
+1. Install the requirements by running `pip install Flask feedparser BeautifulSoup Flask-Bootstrap`.
 2. Run `python taiwan_news_scraper.py`.
 
 The program will generate an HTML file named news_output.html containing the news items aggregated from the specified RSS feeds.
@@ -19,7 +21,7 @@ You can modify the RSS feeds, exclusion keywords, lower-rank keywords, and hide 
 
 ## 使用方法
 
-1. `pip install -r requirements.txt` を実行して、必要なパッケージをインストールします。
+1. `pip install Flask feedparser BeautifulSoup Flask-Bootstrap` を実行して、必要なパッケージをインストールします。
 2. `python taiwan_news_scraper.py` を実行します。
 
 プログラムは、指定した RSS フィードから集約したニュース項目を含む `news_output.html` という名前の HTML ファイルを生成します。
@@ -34,7 +36,7 @@ You can modify the RSS feeds, exclusion keywords, lower-rank keywords, and hide 
 
 ## 使用方法
 
-1. 透過執行 `pip install -r requirements.txt` 安裝所需的套件。
+1. 透過執行 `pip install Flask feedparser BeautifulSoup Flask-Bootstrap` 安裝所需的套件。
 2. 執行 `python taiwan_news_scraper.py`。
 
 該程式將生成一個名為 `news_output.html` 的 HTML 文件，其中包含從指定的 RSS 饋送聚合的新聞項目。

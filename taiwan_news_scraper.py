@@ -31,8 +31,10 @@ EXCLUDE_KEYWORDS = {"中國", "中英對照讀新聞", "中職", "民眾黨", "�
                     "亞錦", "張秀卿", "股市", "柯志恩", "周子瑜", "聯賽", "游淑慧",
                     "王世堅", "高嘉瑜", "林心如", "柯文哲", "亞運", "男籃", "演藝圈",
                     "高虹安", "選秀", "TIME", "攻蛋", "台北巨蛋", "盧秀燕", "韓國瑜",
-                    "朱立倫", "馬英九", "素食", "小甜甜", "TikTok", "戴愛玲", "何志偉", "客家"}
-LOWER_RANK_KEYWORDS = {"羨慕", "詐騙", "熱情"}
+                    "朱立倫", "馬英九", "素食", "小甜甜", "TikTok", "戴愛玲", "何志偉",
+                    "客家", "日職", "539", "國際油價", "黃金", "盧廣仲", "大愛", "全裸",
+                    "裸奔", "詐騙", "捐血"}
+LOWER_RANK_KEYWORDS = {"羨慕", "熱情"}
 
 # Categories to hide
 HIDE_CATEGORIES = {"政治", "娛樂", "體育", "地方", "評論", "蒐奇"}
@@ -54,8 +56,9 @@ def get_news():
         feed = feedparser.parse(url)
         filtered_articles = []
         for entry in feed.entries:
-            # Skip articles that contain excluded keywords
-            if any(keyword in entry.title for keyword in EXCLUDE_KEYWORDS):
+            # Skip articles that contain excluded keywords in title or description
+            if any(keyword in entry.title for keyword in EXCLUDE_KEYWORDS) or \
+                    any(keyword in entry.description for keyword in EXCLUDE_KEYWORDS):
                 continue
 
             title = entry.title

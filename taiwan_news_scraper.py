@@ -31,8 +31,8 @@ EXCLUDE_KEYWORDS = {"中國", "中英對照讀新聞", "中職", "民眾黨", "�
                     "亞錦", "張秀卿", "股市", "柯志恩", "周子瑜", "聯賽", "游淑慧",
                     "王世堅", "高嘉瑜", "林心如", "柯文哲", "亞運", "男籃", "演藝圈",
                     "高虹安", "選秀", "TIME", "攻蛋", "台北巨蛋", "盧秀燕", "韓國瑜",
-                    "朱立倫", "馬英九", "素食", "小甜甜", "TikTok", "戴愛玲", "何志偉"}
-LOWER_RANK_KEYWORDS = {"降低排序的關鍵詞1", "降低排序的關鍵詞2"}
+                    "朱立倫", "馬英九", "素食", "小甜甜", "TikTok", "戴愛玲", "何志偉", "客家"}
+LOWER_RANK_KEYWORDS = {"羨慕", "詐騙", "熱情"}
 
 # Categories to hide
 HIDE_CATEGORIES = {"政治", "娛樂", "體育", "地方", "評論", "蒐奇"}
@@ -44,6 +44,8 @@ MAX_PARAGRAPHS = 3  # Maximum number of paragraphs to include in the summary
 @app.route('/')
 def get_news():
     all_articles = {}
+    seen_articles = set()  # Track seen articles
+
     for category, url in RSS_FEEDS.items():
         # Skip categories that we want to hide
         if category in HIDE_CATEGORIES:
@@ -65,6 +67,12 @@ def get_news():
 
             formatted_published_time = published_time.strftime(
                 '%Y-%m-%d %H:%M:%S')
+
+            # Generate unique ID for the article
+            article_id = hash((title, description))
+            if article_id in seen_articles:  # Skip if the article has been seen before
+                continue
+            seen_articles.add(article_id)
 
             filtered_article = {
                 'title': title,

@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import feedparser
 from flask_bootstrap import Bootstrap
 from datetime import datetime
@@ -121,11 +121,14 @@ def get_news(RSS_FEEDS, EXCLUDE_KEYWORDS, LOWER_RANK_KEYWORDS, HIDE_CATEGORIES):
 
 @app.route('/')
 def news():
+    # Default to 300 seconds (5 minutes)
+    refresh_interval = request.args.get(
+        'refresh_interval', default=300, type=int)
     all_articles_taiwan = get_news(
         RSS_FEEDS_TAIWAN, EXCLUDE_KEYWORDS_TAIWAN, LOWER_RANK_KEYWORDS_TAIWAN, HIDE_CATEGORIES_TAIWAN)
     all_articles_japan = get_news(
         RSS_FEEDS_JAPAN, EXCLUDE_KEYWORDS_JAPAN, LOWER_RANK_KEYWORDS_JAPAN, HIDE_CATEGORIES_JAPAN)
-    return render_template('news_template.html', taiwan_articles=all_articles_taiwan, japan_articles=all_articles_japan)
+    return render_template('news_template.html', taiwan_articles=all_articles_taiwan, japan_articles=all_articles_japan, refresh_interval=refresh_interval)
 
 
 if __name__ == "__main__":

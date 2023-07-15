@@ -1,8 +1,8 @@
 from flask import Flask, render_template
 import feedparser
-from bs4 import BeautifulSoup
 from flask_bootstrap import Bootstrap
 from datetime import datetime
+from dateutil import parser
 
 app = Flask(__name__)
 Bootstrap(app)
@@ -29,7 +29,9 @@ EXCLUDE_KEYWORDS = {"中國", "中英對照讀新聞", "中職", "民眾黨", "�
                     "飆股幕後", "首長早餐會", "王力宏", "Makiyo", "弦子", "吳鳳",
                     "彭佳慧", "MLB", "金廈", "如懿傳", "黃國昌", "館長", "李玟",
                     "亞錦", "張秀卿", "股市", "柯志恩", "周子瑜", "聯賽", "游淑慧",
-                    "王世堅", "高嘉瑜", "林心如", "柯文哲", "亞運", "男籃", "演藝圈"}
+                    "王世堅", "高嘉瑜", "林心如", "柯文哲", "亞運", "男籃", "演藝圈",
+                    "高虹安", "選秀", "TIME", "攻蛋", "台北巨蛋", "盧秀燕", "韓國瑜",
+                    "朱立倫", "馬英九", "素食", "小甜甜", "TikTok", "戴愛玲", "何志偉"}
 LOWER_RANK_KEYWORDS = {"降低排序的關鍵詞1", "降低排序的關鍵詞2"}
 
 # Categories to hide
@@ -49,27 +51,24 @@ def get_news():
 
         feed = feedparser.parse(url)
         filtered_articles = []
-        for article in feed['entries']:
+        for entry in feed.entries:
             # Skip articles that contain excluded keywords
-            if any(keyword in article.title for keyword in EXCLUDE_KEYWORDS):
+            if any(keyword in entry.title for keyword in EXCLUDE_KEYWORDS):
                 continue
 
-            # Parse description HTML with BeautifulSoup
-            soup = BeautifulSoup(article.get('summary', ''), 'html.parser')
-
-            # Limit the description to the first MAX_PARAGRAPHS paragraphs
-            description = '\n'.join(str(p)
-                                    for p in soup.find_all('p')[:MAX_PARAGRAPHS])
-
+            title = entry.title
+            link = entry.link
+            description = entry.description
+            published_time = entry.published
             # Get the published time of the article
-            published_time = datetime.strptime(article.get(
-                'published', ''), '%a, %d %b %Y %H:%M:%S %z')
+            published_time = parser.parse(entry.published)
+
             formatted_published_time = published_time.strftime(
-                '%Y-%m-%d %H:%M')
+                '%Y-%m-%d %H:%M:%S')
 
             filtered_article = {
-                'title': article.get('title', ''),
-                'link': article.get('link', ''),
+                'title': title,
+                'link': link,
                 'description': description,
                 'published_time': formatted_published_time
             }
@@ -83,11 +82,6 @@ def get_news():
 
         # Limit the articles to NEWS_PER_FEED
         all_articles[category] = filtered_articles[:NEWS_PER_FEED]
-
-    # Sort the articles by published time in descending order
-    for category, articles in all_articles.items():
-        all_articles[category] = sorted(articles, key=lambda x: datetime.strptime(
-            x['published_time'], '%Y-%m-%d %H:%M'), reverse=True)
 
     return render_template('news_template.html', articles=all_articles)
 

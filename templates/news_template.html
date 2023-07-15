@@ -20,7 +20,7 @@
             color: rgb(255, 0, 174);
         }
         .content {
-            height: 100px;
+            height: 150px;
             overflow: auto;
         }
         a {
@@ -39,6 +39,7 @@
                     <p>
                         <a href="{{article['link']}}">{{article['title']}}</a>
                         <br>{{article['description']}}
+                        <br>{{article['published_time']}}
                     </p>
                 </div>
                 {% endfor %}

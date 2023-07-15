@@ -8,13 +8,13 @@ Bootstrap(app)
 
 # RSS feeds for different categories
 RSS_FEEDS = {
+    '國際': 'https://news.ltn.com.tw/rss/world.xml',
+    '生活': 'https://news.ltn.com.tw/rss/life.xml',
+    '財經': 'https://news.ltn.com.tw/rss/business.xml',
     '即時': 'https://news.ltn.com.tw/rss/all.xml',
     '政治': 'https://news.ltn.com.tw/rss/politics.xml',
     '社會': 'https://news.ltn.com.tw/rss/society.xml',
-    '生活': 'https://news.ltn.com.tw/rss/life.xml',
     '評論': 'https://news.ltn.com.tw/rss/opinion.xml',
-    '國際': 'https://news.ltn.com.tw/rss/world.xml',
-    '財經': 'https://news.ltn.com.tw/rss/business.xml',
     '體育': 'https://news.ltn.com.tw/rss/sports.xml',
     '娛樂': 'https://news.ltn.com.tw/rss/entertainment.xml',
     '地方': 'https://news.ltn.com.tw/rss/local.xml',
@@ -22,14 +22,15 @@ RSS_FEEDS = {
 }
 
 # Keywords for excluding or lowering rank
-EXCLUDE_KEYWORDS = {"不感興趣的關鍵詞1", "不感興趣的關鍵詞2"}
+EXCLUDE_KEYWORDS = {"中國", "中英對照讀新聞", "中職",
+                    "民眾黨", "濕身", "郭台銘", "廖大乙", "侯友宜", "中醫", "民俗", "證券行情表", "證券表格", "浪浪", "環保團體", "自由說新聞", "官我什麼事"}
 LOWER_RANK_KEYWORDS = {"降低排序的關鍵詞1", "降低排序的關鍵詞2"}
 
 # Categories to hide
-HIDE_CATEGORIES = {"不感興趣的類別"}
+HIDE_CATEGORIES = {"即時", "政治", "娛樂", "體育", "地方", "評論"}
 
-NEWS_PER_FEED = 10  # Maximum number of news items per feed
-MAX_PARAGRAPHS = 3  # Maximum number of paragraphs to include in the summary
+NEWS_PER_FEED = 20  # Maximum number of news items per feed
+MAX_PARAGRAPHS = 2  # Maximum number of paragraphs to include in the summary
 
 
 @app.route('/')
@@ -42,7 +43,7 @@ def get_news():
 
         feed = feedparser.parse(url)
         filtered_articles = []
-        for article in feed['entries']:
+        for article in feed.entries:
             # Skip articles that contain excluded keywords
             if any(keyword in article.title for keyword in EXCLUDE_KEYWORDS):
                 continue
@@ -51,8 +52,9 @@ def get_news():
             soup = BeautifulSoup(article.get('summary', ''), 'html.parser')
 
             # Limit the description to the first MAX_PARAGRAPHS paragraphs
+            paragraphs = soup.find_all('p')
             description = '\n'.join(str(p)
-                                    for p in soup.find_all('p')[:MAX_PARAGRAPHS])
+                                    for p in paragraphs[:MAX_PARAGRAPHS])
 
             filtered_article = {
                 'title': article.get('title', ''),

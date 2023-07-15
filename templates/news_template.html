@@ -3,6 +3,10 @@
 <head>
     <title>Taiwan News Scraper</title>
     <style>
+        .container {
+            width: 80%;
+            margin: 0 auto; /* Center the container */
+        }
         .row {
             display: flex;
             flex-wrap: wrap;
@@ -11,12 +15,6 @@
         .column {
             flex: 0 0 calc(20% - 10px); /* Five columns, accounting for margins */
             margin: 5px;
-            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
-            transition: 0.3s;
-            border-radius: 5px; /* 5px rounded corners */
-        }
-        .column:hover {
-            box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
         }
         h2 {
             color: red;
@@ -24,25 +22,26 @@
         .content {
             height: 100px;
             overflow: auto;
-            padding: 2px 16px;
         }
     </style>
 </head>
 <body>
-    <div class="row">
-        {% for category, articles in articles.items() %}
-        <div class="column">
-            <h2>{{category}}</h2>
-            {% for article in articles %}
-            <div class="content">
-                <p>
-                    <a href="{{article['link']}}">{{article['title']}}</a>
-                    <br>{{article['description']}}
-                </p>
+    <div class="container">
+        <div class="row">
+            {% for category, articles in articles.items() %}
+            <div class="column">
+                <h2>{{category}}</h2>
+                {% for article in articles %}
+                <div class="content">
+                    <p>
+                        <a href="{{article['link']}}">{{article['title']}}</a>
+                        <br>{{article['description']}}
+                    </p>
+                </div>
+                {% endfor %}
             </div>
             {% endfor %}
         </div>
-        {% endfor %}
     </div>
 </body>
 </html>

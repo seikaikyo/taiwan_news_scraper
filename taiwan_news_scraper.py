@@ -39,7 +39,7 @@ LOWER_RANK_KEYWORDS = {"羨慕", "熱情"}
 # Categories to hide
 HIDE_CATEGORIES = {"政治", "娛樂", "體育", "地方", "評論", "蒐奇"}
 
-NEWS_PER_FEED = 30  # Maximum number of news items per feed
+NEWS_PER_FEED = 20  # Maximum number of news items per feed
 MAX_PARAGRAPHS = 3  # Maximum number of paragraphs to include in the summary
 
 

@@ -35,17 +35,7 @@ RSS_FEEDS_JAPAN = {
 }  # Japan RSS feeds
 
 # Keywords for excluding or lowering rank
-EXCLUDE_KEYWORDS_TAIWAN = {"中國", "中英對照讀新聞", "中職", "民眾黨", "濕身", "郭台銘",
-                           "廖大乙", "侯友宜", "中醫", "民俗", "證券行情表", "證券表格",
-                           "浪浪", "環保團體", "自由說新聞", "官我什麼事", "謠言終結站",
-                           "飆股幕後", "首長早餐會", "王力宏", "Makiyo", "弦子", "吳鳳",
-                           "彭佳慧", "MLB", "金廈", "如懿傳", "黃國昌", "館長", "李玟",
-                           "亞錦", "張秀卿", "股市", "柯志恩", "周子瑜", "聯賽", "游淑慧",
-                           "王世堅", "高嘉瑜", "林心如", "柯文哲", "亞運", "男籃", "演藝圈",
-                           "高虹安", "選秀", "TIME", "盧秀燕", "韓國瑜",
-                           "朱立倫", "馬英九", "素食", "小甜甜", "TikTok", "戴愛玲", "何志偉",
-                           "客家", "日職", "539", "國際油價", "黃金", "盧廣仲", "大愛", "全裸",
-                           "裸奔", "詐騙", "捐血", "小巨蛋", "陳奕迅"}
+EXCLUDE_KEYWORDS_TAIWAN = {"中國", "中英對照讀新聞", "中職", "民眾黨", "濕身", "郭台銘"}
 LOWER_RANK_KEYWORDS_TAIWAN = {"羨慕", "熱情"}
 
 # Categories to hide
@@ -58,77 +48,100 @@ LOWER_RANK_KEYWORDS_JAPAN = {"情熱"}
 # Categories to hide
 HIDE_CATEGORIES_JAPAN = {"スポーツ", "政治", "文化.エンタメ"}
 
-NEWS_PER_FEED = 20  # Maximum number of news items per feed
+NEWS_PER_FEED = 10  # Maximum number of news items per feed
 MAX_PARAGRAPHS = 3  # Maximum number of paragraphs to include in the summary
 
 
-def trim_description(description, max_lines=10, width=80):
-    """Trim the description to a certain number of lines."""
-    lines = textwrap.wrap(description, width=width)
-    if len(lines) > max_lines:
-        lines = lines[:max_lines]
-    return ' '.join(lines)
+class NewsSource:
+    def __init__(self, feeds, exclude_keywords, lower_rank_keywords, hide_categories, max_paragraphs=3, width=80):
+        self.feeds = feeds
+        self.exclude_keywords = exclude_keywords
+        self.lower_rank_keywords = lower_rank_keywords
+        self.hide_categories = hide_categories
+        self.max_paragraphs = max_paragraphs
+        self.width = width
+        self.seen_articles = set()  # Track seen articles
 
+    def get_news(self):
+        articles = {}
+        for category, url in self.feeds.items():
+            if category not in self.hide_categories:
+                articles[category] = self._parse_feed(url)
+        return articles
 
-def get_news(RSS_FEEDS, EXCLUDE_KEYWORDS, LOWER_RANK_KEYWORDS, HIDE_CATEGORIES):
-    all_articles = {}
-    seen_articles = set()  # Track seen articles
+    # ... Rest of your methods ...
 
-    for category, url in RSS_FEEDS.items():
-        # Skip categories that we want to hide
-        if category in HIDE_CATEGORIES:
-            continue
+    def _parse_feed(self, url):
+        try:
+            feed = feedparser.parse(url)
+            return self._process_entries(feed.entries)
+        except Exception as e:
+            print(f"Failed to parse feed from {url}. Error: {e}")
+            return []
 
-        feed = feedparser.parse(url)
+    def _process_entries(self, entries):
         articles = []
-        for entry in feed.entries:
+        for entry in entries:
             # Skip articles that contain excluded keywords in title or description
-            if any(keyword in entry.title for keyword in EXCLUDE_KEYWORDS) or \
-                    any(keyword in entry.description for keyword in EXCLUDE_KEYWORDS):
+            if any(keyword in entry.title for keyword in self.exclude_keywords) or \
+                    any(keyword in entry.description for keyword in self.exclude_keywords):
                 continue
 
             title = entry.title
             link = entry.link
-            description = trim_description(entry.description)
-            published_time = entry.published
-            # Get the published time of the article
-            published_time = parser.parse(entry.published)
+            description = self.trim_description(entry.description)
+            pub_date = parser.parse(entry.published)
+            rank = 1 if any(keyword in title for keyword in self.lower_rank_keywords) or \
+                any(keyword in description for keyword in self.lower_rank_keywords) else 0
 
-            formatted_published_time = published_time.strftime(
-                '%Y-%m-%d %H:%M:%S')
-
-            # Generate unique ID for the article
-            article_id = hash((title, description))
-            if article_id in seen_articles:  # Skip if the article has been seen before
+            # Skip if we've already seen this article
+            if (title, pub_date) in self.seen_articles:
                 continue
-            seen_articles.add(article_id)
+            self.seen_articles.add((title, pub_date))
 
             articles.append({
                 'title': title,
                 'link': link,
                 'description': description,
-                'published_time': formatted_published_time
+                'pub_date': pub_date,
+                'rank': rank,
             })
 
-        # Sort the articles by published time from new to old
-        articles.sort(
-            key=lambda article: article['published_time'], reverse=True)
+        return sorted(articles, key=lambda x: (x['rank'], x['pub_date']), reverse=True)[:NEWS_PER_FEED]
 
-        # Limit the articles to NEWS_PER_FEED
-        all_articles[category] = articles[:NEWS_PER_FEED]
-    return all_articles
+    def trim_description(self, description):
+        paragraphs = description.split('\n')
+        trimmed = "\n".join(textwrap.fill(p, self.width)
+                            for p in paragraphs[:self.max_paragraphs])
+        return trimmed
 
 
-@app.route('/')
-def news():
+news_source_taiwan = NewsSource(
+    RSS_FEEDS_TAIWAN, EXCLUDE_KEYWORDS_TAIWAN, LOWER_RANK_KEYWORDS_TAIWAN, HIDE_CATEGORIES_TAIWAN)
+news_source_japan = NewsSource(
+    RSS_FEEDS_JAPAN, EXCLUDE_KEYWORDS_JAPAN, LOWER_RANK_KEYWORDS_JAPAN, HIDE_CATEGORIES_JAPAN)
+
+
+@app.route("/")
+def home():
     # Default to 300 seconds (5 minutes)
     refresh_interval = request.args.get(
         'refresh_interval', default=300, type=int)
-    all_articles_taiwan = get_news(
-        RSS_FEEDS_TAIWAN, EXCLUDE_KEYWORDS_TAIWAN, LOWER_RANK_KEYWORDS_TAIWAN, HIDE_CATEGORIES_TAIWAN)
-    all_articles_japan = get_news(
-        RSS_FEEDS_JAPAN, EXCLUDE_KEYWORDS_JAPAN, LOWER_RANK_KEYWORDS_JAPAN, HIDE_CATEGORIES_JAPAN)
+    all_articles_taiwan = news_source_taiwan.get_news()
+    all_articles_japan = news_source_japan.get_news()
     return render_template('news_template.html', taiwan_articles=all_articles_taiwan, japan_articles=all_articles_japan, refresh_interval=refresh_interval)
+
+
+@app.route("/taiwan")
+def taiwan_news():
+    news = news_source_taiwan.get_news()
+    return render_template('taiwan_news_template.html', news=news, title='Taiwan')
+
+
+@app.route("/japan")
+def japan_news():
+    news = news_source_japan.get_news()
+    return render_template('nhk_news_template.html', news=news, title='Japan')
 
 
 if __name__ == "__main__":

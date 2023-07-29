@@ -64,14 +64,14 @@
                 <div class="column">
                     <h2>{{category}}</h2>
                     {% for article in articles %}
-                    <div class="content">
-                        <p>
-                            <a href="{{article['link']}}" target="_blank">{{article['title']}}</a>
-                            <br>{{ article['published_time'] }}
-                            <br>
-                            <br>{{ article['description'] }}
-                        </br>
-                    </div>
+                      <div class="content">
+                          <p>
+                              {{ article['published_time'] }}<br>
+                              <a href="{{article['link']}}" target="_blank">{{article['title']}}</a><br><p>
+                              {{ article['description'] }}<br>
+                          </p>
+                      </div>
+
                     {% endfor %}
                 </div>
                 {% endfor %}
